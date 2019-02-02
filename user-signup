@@ -1,0 +1,221 @@
+[33mcommit 81b26b267f464124b625e5839324c8db655f6c6f[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: Cassandra <Cassandra>
+Date:   Wed Jan 30 17:35:05 2019 -0600
+
+    started user-signup
+
+[1mdiff --git a/main.py b/main.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..e64bd49[m
+[1m--- /dev/null[m
+[1m+++ b/main.py[m
+[36m@@ -0,0 +1,160 @@[m
+[32m+[m[32mfrom flask import Flask, request, redirect, render_template[m
+[32m+[m
+[32m+[m[32mimport cgi[m
+[32m+[m
+[32m+[m[32mapp = Flask(__name__)[m
+[32m+[m[32mapp.config['DEBUG'] = True[m
+[32m+[m
+[32m+[m[32m@app.route('/signup')[m
+[32m+[m[32mdef display_user_signup_form():[m
+[32m+[m[32m    return render_template('main.html')[m
+[32m+[m
+[32m+[m[32mdef empty_val(x):[m
+[32m+[m[32m    if x:[m
+[32m+[m[32m        return True[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        return False[m
+[32m+[m
+[32m+[m[32mdef char_length(x):[m
+[32m+[m[32m    if len(x) > 2 and len(x) < 21:[m
+[32m+[m[32m        return True[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        return False[m
+[32m+[m
+[32m+[m[32mdef email_at_symbol(x):[m
+[32m+[m[32m    if x.count('@') >= 1:[m
+[32m+[m[32m        return True[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        return False[m
+[32m+[m
+[32m+[m[32mdef email_at_symbol_more_than_one(x):[m
+[32m+[m[32m    if x.count('@') <= 1:[m
+[32m+[m[32m        return True[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        return False[m
+[32m+[m
+[32m+[m[32mdef email_period(x):[m
+[32m+[m[32m    if x.count('.') >= 1:[m
+[32m+[m[32m        return True[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        return False[m
+[32m+[m
+[32m+[m[32mdef email_period_more_than_one(x):[m
+[32m+[m[32m    if x.count('.') <= 1:[m
+[32m+[m[32m        return True[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        return False[m
+[32m+[m
+[32m+[m[32m@app.route("/signup", methods=['POST'])[m
+[32m+[m[32mdef user_signup_complete():[m
+[32m+[m
+[32m+[m[32m    username = request.form['username'][m
+[32m+[m[32m    password = request.form['password'][m
+[32m+[m[32m    password_validate = request.form['password_validate'][m
+[32m+[m[32m    email = request.form['email'][m
+[32m+[m
+[32m+[m[32m    username_error = ""[m
+[32m+[m[32m    password_error = ""[m
+[32m+[m[32m    password_validate_error = ""[m
+[32m+[m[32m    email_error = ""[m
+[32m+[m
+[32m+[m[32m    err_required = "Required field"[m
+[32m+[m[32m    err_reenter_pw = "Please re-enter password"[m
+[32m+[m[32m    err_char_count = "must be between 3 and 20 characters"[m
+[32m+[m[32m    err_no_spaces = "must not contain spaces"[m
+[32m+[m
+[32m+[m[32m    if not empty_val(password):[m
+[32m+[m[32m        password_error = err_required[m
+[32m+[m[32m        password = ''[m
+[32m+[m[32m        password_validate = ''[m
+[32m+[m[32m    elif not char_length(password):[m
+[32m+[m[32m        password_error = "Password " + err_char_count[m
+[32m+[m[32m        password = ''[m
+[32m+[m[32m        password_validate = ''[m
+[32m+[m[32m        password_validate_error = err_reenter_pw[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        if " " in password:[m
+[32m+[m[32m            password_error = "Password " + err_no_spaces[m
+[32m+[m[32m            password = ''[m
+[32m+[m[32m            password_validate = ''[m
+[32m+[m[32m            password_validate_error = err_reenter_pw[m
+[32m+[m
+[32m+[m[32m    if password_validate != password:[m
+[32m+[m[32m        password_validate_error = "Passwords must match"[m
+[32m+[m[32m        password = ''[m
+[32m+[m[32m        password_validate = ''[m
+[32m+[m[32m        password_error = 'Passwords must match'[m
+[32m+[m
+[32m+[m
+[32m+[m[32m    if not empty_val(username):[m
+[32m+[m[32m        username_error = err_required[m
+[32m+[m[32m        password = ''[m
+[32m+[m[32m        password_validate = ''[m
+[32m+[m[32m        password_error = err_reenter_pw[m
+[32m+[m[32m        password_validate_error = err_reenter_pw[m
+[32m+[m[32m    elif not char_length(username):[m
+[32m+[m[32m        username_error = "Username " + err_char_count[m
+[32m+[m[32m        password = ''[m
+[32m+[m[32m        password_validate = ''[m
+[32m+[m[32m        password_error = err_reenter_pw[m
+[32m+[m[32m        password_validate_error = err_reenter_pw[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        if " " in username:[m
+[32m+[m[32m            username_error = "Username " + err_no_spaces[m
+[32m+[m[32m            password = ''[m
+[32m+[m[32m            password_validate = ''[m
+[32m+[m[32m            password_error = err_reenter_pw[m
+[32m+[m[32m            password_validate_error = err_reenter_pw[m
+[32m+[m
+[32m+[m[32m    if empty_val(email):[m
+[32m+[m[32m        if not char_length(email):[m
+[32m+[m[32m            email_error = "Email " + err_char_count[m
+[32m+[m[32m            password = ''[m
+[32m+[m[32m            password_validate = ''[m
+[32m+[m[32m            password_error = err_reenter_pw[m
+[32m+[m[32m            password_validate_error = err_reenter_pw[m
+[32m+[m[32m        elif not email_at_symbol(email):[m
+[32m+[m[32m            email_error = "Email must contain the @ symbol"[m
+[32m+[m[32m            password = ''[m
+[32m+[m[32m            password_validate = ''[m
+[32m+[m[32m            password_error = err_reenter_pw[m
+[32m+[m[32m            password_validate_error = err_reenter_pw[m
+[32m+[m[32m        elif not email_at_symbol_more_than_one(email):[m
+[32m+[m[32m            email_error = "Email must contain only one @ symbol"[m
+[32m+[m[32m            password = ''[m
+[32m+[m[32m            password_validate = ''[m
+[32m+[m[32m            password_error = err_reenter_pw[m
+[32m+[m[32m            password_validate_error = err_reenter_pw[m
+[32m+[m[32m        elif not email_period(email):[m
+[32m+[m[32m            email_error = "Email must contain ."[m
+[32m+[m[32m            password = ''[m
+[32m+[m[32m            password_validate = ''[m
+[32m+[m[32m            password_error = err_reenter_pw[m
+[32m+[m[32m            password_validate_error = err_reenter_pw[m
+[32m+[m[32m        elif not email_period_more_than_one(email):[m
+[32m+[m[32m            email_error = "Email must contain only one ."[m
+[32m+[m[32m            password = ''[m
+[32m+[m[32m            password_validate = ''[m
+[32m+[m[32m            password_error = err_reenter_pw[m
+[32m+[m[32m            password_validate_error = err_reenter_pw[m
+[32m+[m[32m        else:[m
+[32m+[m[32m            if " " in email:[m
+[32m+[m[32m                email_error = "Email " + err_no_spaces[m
+[32m+[m[32m                password = ''[m
+[32m+[m[32m                password_validate = ''[m
+[32m+[m[32m                password_error = err_reenter_pw[m
+[32m+[m[32m                password_validate_error = err_reenter_pw[m
+[32m+[m
+[32m+[m[32m    if not username_error and not password_error and not password_validate_error and not email_error:[m
+[32m+[m[32m        username = username[m
+[32m+[m[32m        return redirect('/welcome?username={0}'.format(username))[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        return render_template('main.html', username_error=username_error, username=username, password_error=password_error, password=password, password_validate_error=password_validate_error, password_validate=password_validate, email_error=email_error, email=email)[m
+[32m+[m
+[32m+[m
+[32m+[m[32m@app.route('/welcome')[m
+[32m+[m[32mdef valid_signup():[m
+[32m+[m[32m    username = request.args.get('username')[m
+[32m+[m[32m    return render_template('welcome.html', username=username)[m
+[32m+[m
+[32m+[m[32mapp.run()[m
+\ No newline at end of file[m
+[1mdiff --git a/templates/index.html b/templates/index.html[m
+[1mnew file mode 100644[m
+[1mindex 0000000..f6ff7c4[m
+[1m--- /dev/null[m
+[1m+++ b/templates/index.html[m
+[36m@@ -0,0 +1,27 @@[m
+[32m+[m[32m{% extends 'base.html' %}[m
+[32m+[m
+[32m+[m[32m{% block content %}[m[41m    [m
+[32m+[m[41m    [m
+[32m+[m[32m    <h1>User Sign-up</h1>[m
+[32m+[m
+[32m+[m[32m    <form method='POST'>[m
+[32m+[m[32m        <label><span class="form_label">Username</span>[m
+[32m+[m[32m            <input name="username" type="text" value='{{username}}' />[m
+[32m+[m[32m        </label>[m
+[32m+[m[32m        <p class="error">{{username_error}} &nbsp;</p>[m
+[32m+[m[32m        <label><span class="form_label">Password</span>[m
+[32m+[m[32m            <input name="password" type="password" value='{{password}}' />[m
+[32m+[m[32m        </label>[m
+[32m+[m[32m        <p class="error">{{password_error}} &nbsp;</p>[m
+[32m+[m[32m        <label><span class="form_label">Password Validate</span>[m
+[32m+[m[32m            <input name="password_validate" type="password" value='{{password_validate}}' />[m
+[32m+[m[32m        </label>[m
+[32m+[m[32m        <p class="error">{{password_validate_error}} &nbsp;</p>[m
+[32m+[m[32m        <label><span class="form_label">E-mail (optional)</span>[m
+[32m+[m[32m            <input name="email" type="text" value='{{email}}' />[m
+[32m+[m[32m        </label>[m
+[32m+[m[32m        <p class="error">{{email_error}} &nbsp;</p>[m
+[32m+[m[32m        <input class="submit" type="submit" value="Submit" />[m
+[32m+[m[32m    </form>[m
+[32m+[m
+[32m+[m[32m{% endblock %}[m[41m  [m
+\ No newline at end of file[m
+[1mdiff --git a/templates/welcome.html b/templates/welcome.html[m
+[1mnew file mode 100644[m
+[1mindex 0000000..9f66575[m
+[1m--- /dev/null[m
+[1m+++ b/templates/welcome.html[m
+[36m@@ -0,0 +1,7 @@[m
+[32m+[m[32m{% extends 'base.html' %}[m
+[32m+[m
+[32m+[m[32m{% block content %}[m
+[32m+[m
+[32m+[m[32m<h1>Welcome, {{username}}!</h1>[m
+[32m+[m
+[32m+[m[32m{% endblock %}[m
+\ No newline at end of file[m
