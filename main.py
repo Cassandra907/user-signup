@@ -1,64 +1,104 @@
 from flask import Flask, request, redirect, render_template, url_for
-import cgi
 import os
+import jinja2
 import re
+
+template_dir = os.path.join(os.path.dirname(__file__), "templates")  # creates path to templates file via splicing the current directory path (links to templates directory)
+jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)  # creates jinja2 environment to load templates from template folder
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 
 @app.route("/")
 def index():
-    return render_template('index.html', title = "Sign Up")
+    # encoded_error = request.args.get("error")
+    return render_template("signup.html") #, watchlist=get_current_watchlist(), error=encoded_error and cgi.escape(encoded_error, quote=True))
 
-@app.route("/signup", methods=['POST'])
-def signup():
+def is_filled(val):
+    if val != "":  # if val == empty string
+        return True  # return True
+    else:  # if val == empty string
+        return False  # return False
 
-    username = request.form["username"]
-    password = request.form["password"]
-    verify = request.form["verify"]
-    email = request.form["email"]
-
-    username_error = ""
-    password_error = ""
-    verify_error = ""
-    email_error = ""
-
-    if username == "": # Validate Username
-        username_error = "Please enter a valid username."
-    elif len(username) <= 3 or len(username) > 20:
-        username_error = "Username must be between 3 and 20 characters long."
-        username = ""
-    elif " " in username:
-        username_error = "Your username cannot contain any spaces."
-        username = ""
-
-    if password == "": # Validate Password
-        password_error = "Please enter a valid password."
-    elif len(password) < 3 or len(password) > 20:
-        password_error = "Password must be between 3 and 20 characters long."
-    elif " " in password:
-        password_error = "Your password cannot contain any spaces."
-
-    if verify == "" or verify != password: # Verify Password
-        verify_error = "Passwords do not match. Please try again."
-        verify = ""
-
-    if email != "": # Validate Email
-        # Used regex for complete email validation.
-        if not re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
-                email_error = "Not a valid email address."
-
-    if not username_error and not password_error and not verify_error and not email_error:
-        return render_template('welcome.html', username = username)
+def no_whitespace(val):
+    whitespace = " "
+    if whitespace not in val:
+        return True
     else:
-        return render_template(
-            'index.html',
-            username = username,
-            username_error = username_error,
-            password_error = password_error,
-            verify_error = verify_error,
-            email = email,
-            email_error = email_error
-            )
+        return False
+
+def validate_email(val):
+    valid_email = re.compile("[a-zA-Z0-9_]+\.?[a-zA-Z0-9_]+@[a-z]+\.[a-z]+")
+    if valid_email.match(val):
+        return True
+    else:
+        return False
+
+@app.route("/validate-form", methods=["POST"])
+def validate():
+
+    username_input = request.form['username']
+    password_input = request.form['password']
+    verify_input = request.form['verify']
+    email_input = request.form['email']  # grabs user data from form field "email"
+
+    username_error = ""  # create variable to hold error message for this field
+    password_error = ""  # ditto
+    verify_error = ""  # ditto
+    email_error = ""  # ditto]
+
+    # --------------- LONG FORM -----------------
+    if not is_filled(username_input):
+        username_error = "This field cannot be empty"
+        username_input = ""
+    else:
+        username_len = len(username_input)
+        if  username_len > 20 or username_len < 3:
+            username_error = "Username must be between 3 and 20 characters"
+            username_input = ""
+        else:
+            if not no_whitespace(username_input):
+                username_error = "Spaces are not allowed"
+                username_input = ""
+
+    if not is_filled(password_input):
+        password_error = "This field cannot be empty"
+        password_input = ""
+    else:
+        password_len = len(password_input)
+        if  password_len > 20 or password_len < 3:
+            password_error = "Password must be between 3 and 20 characters"
+            password_input = ""
+        else:
+            if not no_whitespace(username_input):
+                password_error = "Spaces are not allowed"
+                password_input = ""
+
+    if not is_filled(verify_input):
+        verify_error = "This field cannot be empty"
+        verify_input = ""
+    else:
+        if verify_input != password_input:
+            verify_error = "Passwords must match"
+            verify_input = ""
+
+    if is_filled(email_input):
+        email_len = len(email_input)
+        if  email_len > 20 or email_len < 3:
+            email_error = "Email must be between 3 and 20 characters"
+            email_input = ""
+        else:
+            if not validate_email(email_input):
+                email_error = "Not a valid email"
+                email_input = ""
+
+    # -------------- ERROR CHECK ----------------
+    if not username_error and not password_error and not verify_error and not email_error:  # if we don't have any error messages:
+        return render_template("welcome.html", username=username_input)
+    else:
+        return render_template ("signup.html",
+        username_input=username_input,
+        email_input=email_input,
+        username_error=username_error, password_error=password_error, verify_error=verify_error, email_error=email_error)
 
 app.run()
