@@ -3,22 +3,21 @@ import os
 import jinja2
 import re
 
-template_dir = os.path.join(os.path.dirname(__file__), "templates")  # creates path to templates file via splicing the current directory path (links to templates directory)
-jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)  # creates jinja2 environment to load templates from template folder
+template_dir = os.path.join(os.path.dirname(__file__), "templates")
+jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 
 @app.route("/")
 def index():
-    # encoded_error = request.args.get("error")
-    return render_template("signup.html") #, watchlist=get_current_watchlist(), error=encoded_error and cgi.escape(encoded_error, quote=True))
+    return render_template("signup.html")
 
 def is_filled(val):
-    if val != "":  # if val == empty string
-        return True  # return True
-    else:  # if val == empty string
-        return False  # return False
+    if val != "":
+        return True
+    else:
+        return False
 
 def no_whitespace(val):
     whitespace = " "
@@ -40,14 +39,13 @@ def validate():
     username_input = request.form['username']
     password_input = request.form['password']
     verify_input = request.form['verify']
-    email_input = request.form['email']  # grabs user data from form field "email"
+    email_input = request.form['email']
 
-    username_error = ""  # create variable to hold error message for this field
-    password_error = ""  # ditto
-    verify_error = ""  # ditto
-    email_error = ""  # ditto]
+    username_error = ""
+    password_error = ""
+    verify_error = ""
+    email_error = ""
 
-    # --------------- LONG FORM -----------------
     if not is_filled(username_input):
         username_error = "This field cannot be empty"
         username_input = ""
@@ -92,8 +90,8 @@ def validate():
                 email_error = "Not a valid email"
                 email_input = ""
 
-    # -------------- ERROR CHECK ----------------
-    if not username_error and not password_error and not verify_error and not email_error:  # if we don't have any error messages:
+
+    if not username_error and not password_error and not verify_error and not email_error:
         return render_template("welcome.html", username=username_input)
     else:
         return render_template ("signup.html",
